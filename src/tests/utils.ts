@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as ts from 'typescript';
 
 export type Sources = {
-  [name: string]: string
+  [name: string]: string;
 };
 
 export type CompileResult = {
@@ -17,7 +17,7 @@ export function compileInMemory(sources: Sources) {
     target: ts.ScriptTarget.ES5,
     module: ts.ModuleKind.CommonJS,
     noLib: false,
-    lib: ['lib.es6.d.ts']
+    lib: ['lib.es6.d.ts'],
   };
 
   const compilerHost = createCompilerHost(sources, options);
@@ -26,34 +26,40 @@ export function compileInMemory(sources: Sources) {
 
   return {
     ok: !emitResult.emitSkipped,
-    errors: extractErrors(emitResult, program)
+    errors: extractErrors(emitResult, program),
   };
 }
 
-function createCompilerHost(sources: Sources, options: ts.CompilerOptions): ts.CompilerHost {
+function createCompilerHost(
+  sources: Sources,
+  options: ts.CompilerOptions
+): ts.CompilerHost {
   const compilerHost = ts.createCompilerHost(options);
   compilerHost.getSourceFile = function(fileName: string, version: ts.ScriptTarget) {
-    let sourceText;
+    let sourceText: string;
     if (fileName in sources) {
       sourceText = sources[fileName];
     } else {
-      sourceText = ts.sys.readFile(fileName);
+      sourceText = ts.sys.readFile(fileName) as string;
     }
     return ts.createSourceFile(fileName, sourceText, version);
   };
-  compilerHost.resolveModuleNames = function(moduleNames: string[], containingFile: string) {
+  compilerHost.resolveModuleNames = function(
+    moduleNames: string[],
+    containingFile: string
+  ) {
     return moduleNames.map(moduleName => {
       if (moduleName === 'rxjs-grpc') {
         return {
-          resolvedFileName: path.join(__dirname, '..', 'index.d.ts')
+          resolvedFileName: path.join(__dirname, '..', 'index.d.ts'),
         };
       } else if (moduleName === './grpc-namespaces') {
         return {
-          resolvedFileName: 'grpc-namespaces.ts'
+          resolvedFileName: 'grpc-namespaces.ts',
         };
       } else {
         const result = ts.resolveModuleName(moduleName, containingFile, options, this);
-        return <ts.ResolvedModule> result.resolvedModule;
+        return <ts.ResolvedModule>result.resolvedModule;
       }
     });
   };
@@ -64,8 +70,10 @@ function extractErrors(emitResult: ts.EmitResult, program: ts.Program) {
   const allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
   return allDiagnostics.map(diagnostic => {
     let prefix = '';
-    if (diagnostic.file) {
-      const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+    if (diagnostic.file && diagnostic.start) {
+      const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(
+        diagnostic.start
+      );
       prefix = `${diagnostic.file.fileName} (${line + 1},${character + 1}): `;
     }
     const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
