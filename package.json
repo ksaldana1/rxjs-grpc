@@ -1,17 +1,16 @@
 {
   "main": "js/index",
   "typings": "js/index",
-  "name": "rxjs-grpc",
-  "version": "0.1.4",
+  "name": "@avero/rxjs-grpc",
+  "version": "0.1.5",
   "description": "Typesafe gRPC with RxJS in TypeScript",
   "license": "MIT",
   "keywords": [],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kondi/rxjs-grpc.git"
-  },
   "bin": {
     "rxjs-grpc": "./bin/rxjs-grpc"
+  },
+  "publishConfig": {
+    "registry": "https://nexus.aws.averoinc.com/repository/npm-private/"
   },
   "scripts": {
     "start": "node js/cli",
