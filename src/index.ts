@@ -48,7 +48,7 @@ function createMethod(rxImpl: DynamicMethods, name: string, serviceMethods: Dyna
 
 function createUnaryMethod(rxImpl: DynamicMethods, name: string) {
   return function(call: any, callback: any) {
-    const response: Observable<any> = rxImpl[name](call.request);
+    const response: Observable<any> = rxImpl[name](call.request, call.metadata);
     response.subscribe(
       data => callback(null, data),
       error => callback(error)
@@ -58,7 +58,7 @@ function createUnaryMethod(rxImpl: DynamicMethods, name: string) {
 
 function createStreamingMethod(rxImpl: DynamicMethods, name: string) {
   return async function(call: any, callback: any) {
-    const response: Observable<any> = rxImpl[name](call.request);
+    const response: Observable<any> = rxImpl[name](call.request, call.metadata);
     await response.forEach(data => call.write(data));
     call.end();
   };
